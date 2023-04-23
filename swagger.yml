@@ -1,0 +1,198 @@
+openapi: 3.0.0
+info:
+  title: "Test API"
+  description: "Trying to write our own API"
+  version: 1.0.0
+
+servers:
+  - url: "/api"
+
+paths:
+  /people:
+    summary: "Fake russian people data"
+    get:
+      tags:
+        - People
+      summary: "Return a json with data"
+      operationId: people.get_peoples
+      responses:
+        "200":
+          description: "Successfully get people data"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Page_of_peoples"
+        "default":
+          description: "Все нестандартное"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+        tags:
+          - People
+        summary: "Create a new people"
+        operationId: people.create_people
+        requestBody:
+          required: true
+          content:
+            application/json:
+              x-body-name: "people"
+              schema:
+                $ref: "#/components/schemas/People"
+        responses:
+          "200":
+            description: "Successfully get people data"
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/People"
+          "422":
+            description: "Введенные данные не прошли валидацию"
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/Error"
+          "default":
+            description: "Все нестандартное"
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/Error"
+  /people/{people_id}:
+    get:
+      tags:
+        - People
+      summary: "Возаращает человека по указанному id"
+      operationId: people.get_people_by_id
+      parameters:
+        - name: people_id
+          in: path
+          required: true
+          description: "Идентификатор человека"
+          schema:
+            type: "string"
+      responses:
+          "200":
+            description: "Successfully get people by id data"
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/People"
+          "default":
+            description: "Все нестандартное"
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/Error"
+    put:
+      tags:
+        - People
+      summary: "Обновляет данные об пользователе"
+      operationId: people.update_people
+      parameters:
+        - name: people_id
+          in: path
+          required: true
+          description: "Идентификатор человека"
+          schema:
+            type: "string"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              x-body-name: "people"
+              $ref: "#/components/schemas/People"
+      responses:
+        "200":
+          description: "Успешное обновление данных человека"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/People"
+        "422":
+          description: "Введенные данные не прошли валидацию"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "default":
+            description: "Все нестандартное"
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/Error"
+    delete:
+      tags:
+        - People
+      summary: "Удаляет человека по заданному идентификатору"
+      operationId: people.delete_people
+      parameters:
+      - name: people_id
+        in: path
+        required: true
+        description: "Идентификатор человека"
+        schema:
+          type: "string"
+      responses:
+        "200":
+          description: "Успешное удаление данных человека"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/People"
+        "default":
+          description: "Все нестандартное"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+components:
+  schemas:
+    People:
+      type: object
+      properties:
+        id:
+          type: "integer"
+          example: 1
+        phone:
+          type: "integer"
+          example: 79112117705
+        email:
+          type: "string"
+          example: "realrivals@yandex.ru"
+        fio:
+          type: "string"
+          example: "Волошин Алексей Андреевич"
+        birthday:
+          type: "string"
+          example: "07.01.1994"
+    Peoples:
+      type: array
+      items:
+        $ref: "#/components/schemas/People"
+    Page_of_peoples:
+      type: object
+      properties:
+        peoples:
+          $ref: "#/components/schemas/Peoples"
+        total:
+          type: "integer"
+          example: 1000
+        skiop:
+          type: "integer"
+          example: 100
+        limit:
+          type: "integer"
+          example: 50
+    Error:
+      type: object
+      required:
+        - code
+        - errors
+      properties:
+        code:
+          type: "integer"
+        errors:
+          type: object
