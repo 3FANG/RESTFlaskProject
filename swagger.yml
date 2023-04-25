@@ -102,7 +102,7 @@ paths:
           application/json:
             schema:
               x-body-name: "people"
-              $ref: "#/components/schemas/People"
+              $ref: "#/components/schemas/Post_people"
       responses:
         "200":
           description: "Успешное обновление данных человека"

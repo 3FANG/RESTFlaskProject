@@ -3,10 +3,10 @@ from config import db, ma
 
 class Person(db.Model):
     __tablename__ = "person"
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, auto_increment=True)
     fio = db.Column(db.String, nullable=False)
     phone = db.Column(db.Integer)
-    email = db.Culumn(db.String)
+    email = db.Column(db.String)
     birthday = db.Column(db.String, nullable=False)
 
 

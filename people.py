@@ -1,22 +1,25 @@
 import json
 
-from flask import request
+from flask import request, abort, make_response
 
+from config import db
 from services import validate, validate_update_data
+from models import Person, people_schema, person_schema
 
 
 def get_peoples():
-    with open("data.json", encoding='utf-8') as file:
-        data = json.load(file)
+    people = Person.query.all()
 
-    return data
+    return people_schema.dump(people)
 
 
 def get_people_by_id(people_id: str):
-    with open("data.json", encoding='utf-8') as file:
-        data = json.load(file)
+    person = Person.query.filter(Person.id == int(people_id)).one_or_none()
 
-    return data[people_id]
+    if person is not None:
+        return person_schema.dump(person)
+    else:
+        abort(404, f"Person with id {people_id} not found")
 
 
 def create_people(people: dict):
@@ -25,51 +28,43 @@ def create_people(people: dict):
     if errors:
         return {"code": 422, "errors": errors}, 422
 
-    with open("data.json", 'r', encoding='utf-8') as file:
-        data = json.load(file)
+    new_people = person_schema.load(people, session=db.session)
 
-        people_id = len(data) + 1
-        people["id"] = people_id
+    db.session.add(new_people)
+    db.session.commit()
 
-        data[str(people_id)] = people
-
-    with open("data.json", 'w', encoding='utf-8') as file:
-        json.dump(data, file, ensure_ascii=False, indent=4)
-
-    return request.json, 201
+    return person_schema.dump(new_people), 201
 
 
 def update_people(people_id: str, people: dict):
-    with open("data.json", encoding='utf-8') as file:
-        data = json.load(file)
+    existing_people = Person.query.filter(Person.id == int(people_id)).one_or_none()
 
-    if people_id not in data.keys():
-        return {"code": 404, "errors": {'bad_id': "Человек по заданному идентификатору не найден"}}, 404
+    if existing_people is None:
+        return abort(404, f"Person with id {people_id} not found")
 
     errors = validate_update_data(people)
 
     if errors:
         return {"code": 422, "errors": errors}, 422
 
-    for parameter in people.keys():
-        data[people_id][parameter] = people[parameter]
+    updated_people = person_schema.load(people, session=db.session)
+    updated_people.id = existing_people.id
 
-    with open("data.json", 'w', encoding='utf-8') as file:
-        json.dump(data, file, ensure_ascii=False, indent=4)
+    db.session.merge(updated_people)
+    db.session.commit()
 
-    return data[people_id]
+    updated_people = Person.query.filter(Person.id == int(people_id)).one_or_none()
+
+    return person_schema.dump(updated_people), 201
 
 
 def delete_people(people_id: str):
-    with open("data.json", encoding='utf-8') as file:
-        data = json.load(file)
+    existing_person = Person.query.filter(Person.id == int(people_id)).one_or_none()
 
-    if people_id not in data.keys():
-        return {"code": 404, "errors": {'bad_id': "Человек по заданному идентификатору не найден"}}, 404
+    if existing_person is None:
+        return abort(404, f"Person with id {people_id} not found")
 
-    deleted_people = data.pop(people_id)
+    db.session.delete(existing_person)
+    db.session.commit()
 
-    with open("data.json", 'w', encoding='utf-8') as file:
-        json.dump(data, file, ensure_ascii=False, indent=4)
-
-    return deleted_people
+    return make_response(f"{existing_person.fio} successfully deleted", 200)
