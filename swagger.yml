@@ -37,9 +37,9 @@ paths:
           required: true
           content:
             application/json:
-              x-body-name: "people"
               schema:
-                $ref: "#/components/schemas/People"
+                x-body-name: "people"
+                $ref: "#/components/schemas/Post_people"
         responses:
           "200":
             description: "Successfully get people data"
@@ -156,6 +156,21 @@ components:
         id:
           type: "integer"
           example: 1
+        phone:
+          type: "integer"
+          example: 79112117705
+        email:
+          type: "string"
+          example: "realrivals@yandex.ru"
+        fio:
+          type: "string"
+          example: "Волошин Алексей Андреевич"
+        birthday:
+          type: "string"
+          example: "07.01.1994"
+    Post_people:
+      type: object
+      properties:
         phone:
           type: "integer"
           example: 79112117705
